@@ -48,8 +48,9 @@ PLATFORMS: list[Platform] = [
 
 
 async def _connect_ble(
-    hass: HomeAssistant, entry: ConfigEntry, device_id: str
+    hass: HomeAssistant, entry: ConfigEntry, device_id: str, model: str
 ) -> BleConnection:
+    """Connect to the grill via BLE."""
     conn = BleConnection(None, loop=hass.loop)  # type: ignore
     ready = Condition()
 
@@ -66,6 +67,20 @@ async def _connect_ble(
         LOGGER.debug("Bluetooth device detected: %s (%s)", service_info, change)
         if conn.is_connected():
             return
+        
+        # --- FIX FOR GENERIC CONTROLLER ---
+        if model == "Generic":
+            # For Generic grills, we don't use the standard BleConnection logic 
+            # because it tries to subscribe to RPC chars that don't exist.
+            # We just capture the device and let the library handle the rest.
+            LOGGER.debug("Generic grill detected, skipping standard RPC handshake.")
+            conn._ble_device = service_info.device
+            conn._is_connected = True # Fake the connection status for the wait_for below
+            async with ready:
+                ready.notify_all()
+            return
+        # ----------------------------------
+
         entry.async_create_task(hass, reset_device(service_info.device))
 
     entry.async_on_unload(
@@ -100,7 +115,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             device_id, session=async_get_clientsession(hass), loop=hass.loop
         )
     elif protocol == PROTOCOL_BLE:
-        conn = await _connect_ble(hass, entry, device_id)
+        # Pass the model to _connect_ble so we can handle Generic differently
+        conn = await _connect_ble(hass, entry, device_id, model)
     else:
         raise ValueError(f"Unknown protocol: {protocol}")
 
