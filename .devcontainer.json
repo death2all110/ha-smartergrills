@@ -1,5 +1,5 @@
 {
-    "name": "dknowles2/ha-pitboss",
+    "name": "death2all110/ha-smartergrills",
     "image": "mcr.microsoft.com/devcontainers/python:3.13",
     "postCreateCommand": "scripts/setup",
     "forwardPorts": [
