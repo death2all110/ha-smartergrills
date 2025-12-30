@@ -56,6 +56,14 @@ class PitBossDataUpdateCoordinator(DataUpdateCoordinator[StateDict]):
         if not self.api.is_connected():
             raise UpdateFailed("Grill not connected")
 
+        # The Generic driver does not support RPC Pings. 
+        # We assume it's alive if we are connected.
+        if self.api.spec.name != "Generic":
+            try:
+                await self.api.ping(timeout=10.0)
+            except NotConnectedError as ex:
+                raise UpdateFailed("Grill not connected") from ex
+
         try:
             await self.api.ping(timeout=10.0)
         except NotConnectedError as ex:

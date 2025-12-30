@@ -1,6 +1,6 @@
 {
-  "domain": "pitboss",
-  "name": "PitBoss",
+  "domain": "smartergrills",
+  "name": "smartergrills",
   "bluetooth": [
     {
       "connectable": false,
@@ -64,7 +64,7 @@
     }
   ],
   "codeowners": [
-    "@dknowles2"
+    "@death2all110"
   ],
   "config_flow": true,
   "dependencies": [
@@ -77,7 +77,7 @@
     "pytboss"
   ],
   "requirements": [
-    "pytboss==2025.12.0"
+    "git+https://github.com/death2all110/pytboss.git@main#pytboss==2025.12.0"
   ],
   "version": "0000.0.0"
 }

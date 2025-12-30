@@ -85,6 +85,21 @@ class PitBossFlowHandler(ConfigFlow, domain=DOMAIN):
         protocol: str | vol.Undefined = DEFAULT_PROTOCOL,
     ) -> ConfigFlowResult:
         """Show the more_info form."""
+
+        try:
+            control_board = self._device_id.split("-")[0]
+            # Handle PBL2/PBL3 mapping
+            if control_board == "PBL2":
+                control_board = "PBL3"
+            
+            models = [g.name for g in grills.get_grills(control_board=control_board)]
+        except Exception:
+            models = []
+
+        # Always add Generic as an option so you can select it!
+        if "Generic" not in models:
+            models.append("Generic")
+
         control_board = self._device_id.split("-")[0]
         if control_board == "PBL2":
             control_board = "PBL3"
