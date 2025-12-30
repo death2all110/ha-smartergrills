@@ -59,6 +59,18 @@ async def _connect_ble(
         async with ready:
             ready.notify_all()
 
+    # --- NEW HELPER FOR GENERIC GRILLS ---
+    async def generic_connect(ble_device: BLEDevice):
+        """Handle Generic grill connection without RPC handshake."""
+        LOGGER.debug("Generic grill detected, skipping standard RPC handshake.")
+        # Manually set the device and connection status
+        conn._ble_device = ble_device
+        conn._is_connected = True
+        # Notify the waiting setup process
+        async with ready:
+            ready.notify_all()
+    # -------------------------------------
+
     @callback
     def _detection_callback(
         service_info: bluetooth.BluetoothServiceInfoBleak,
@@ -70,14 +82,8 @@ async def _connect_ble(
         
         # --- FIX FOR GENERIC CONTROLLER ---
         if model == "Generic":
-            # For Generic grills, we don't use the standard BleConnection logic 
-            # because it tries to subscribe to RPC chars that don't exist.
-            # We just capture the device and let the library handle the rest.
-            LOGGER.debug("Generic grill detected, skipping standard RPC handshake.")
-            conn._ble_device = service_info.device
-            conn._is_connected = True # Fake the connection status for the wait_for below
-            async with ready:
-                ready.notify_all()
+            # Schedule the async helper we created above
+            entry.async_create_task(hass, generic_connect(service_info.device))
             return
         # ----------------------------------
 
@@ -139,7 +145,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
-
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
