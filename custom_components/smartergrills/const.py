@@ -5,8 +5,8 @@ from logging import Logger, getLogger
 
 LOGGER: Logger = getLogger(__package__)
 
-NAME = "PitBoss"
-DOMAIN = "pitboss"
+NAME = "SmarterGrills"
+DOMAIN = "smartergrills"
 MANUFACTURER = NAME
 PING_INTERVAL = timedelta(seconds=30)
 PROTOCOL_WSS = "wss"

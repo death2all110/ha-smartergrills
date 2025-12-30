@@ -94,20 +94,17 @@ class PitBossFlowHandler(ConfigFlow, domain=DOMAIN):
             
             models = [g.name for g in grills.get_grills(control_board=control_board)]
         except Exception:
+            # If splitting the name fails, start with an empty list
             models = []
 
         # Always add Generic as an option so you can select it!
         if "Generic" not in models:
             models.append("Generic")
 
-        control_board = self._device_id.split("-")[0]
-        if control_board == "PBL2":
-            control_board = "PBL3"
-        models = [g.name for g in grills.get_grills(control_board=control_board)]
         if not models:
             return self.async_abort(
                 reason="unknown_grill",
-                description_placeholders={"control_board": control_board},
+                description_placeholders={"control_board": self._device_id},
             )
         return self.async_show_form(
             step_id=step_id,
