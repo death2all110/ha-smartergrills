@@ -64,11 +64,6 @@ class PitBossDataUpdateCoordinator(DataUpdateCoordinator[StateDict]):
             except NotConnectedError as ex:
                 raise UpdateFailed("Grill not connected") from ex
 
-        try:
-            await self.api.ping(timeout=10.0)
-        except NotConnectedError as ex:
-            raise UpdateFailed("Grill not connected") from ex
-
         if self.data is None:
             # We haven't received a WebSocket push. Try to manually fetch the state.
             try:
